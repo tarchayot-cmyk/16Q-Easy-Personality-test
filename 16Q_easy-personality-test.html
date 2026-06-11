@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quick 16 Personality Test</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F5F4F0; --surface: #FFFFFF; --ink: #1C1C28; --ink-muted: #6B6B80;
+    --indigo: #4052B5; --indigo-light: #EEF0FB; --indigo-mid: #7B8DD6;
+    --teal: #2BBFA4; --amber: #F59E0B; --rose: #F06680;
+    --green: #22C55E; --red: #EF4444;
+    --border: #E4E3DF; --radius: 16px;
+    --transition: 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+  html { font-size: 16px; }
+  body {
+    font-family: 'IBM Plex Sans Thai','Sarabun',sans-serif;
+    background: var(--bg); color: var(--ink);
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; padding: 24px 16px 56px;
+  }
+  /* HEADER */
+  .header { width:100%; max-width:560px; margin-bottom:28px; display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .header-badge { font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--indigo); background:var(--indigo-light); border-radius:100px; padding:4px 12px; }
+  .header h1 { font-size:22px; font-weight:600; color:var(--ink); text-align:center; line-height:1.3; }
+  .header p { font-size:13.5px; color:var(--ink-muted); text-align:center; line-height:1.6; }
+  /* PROGRESS */
+  .progress-wrap { width:100%; max-width:560px; margin-bottom:20px; }
+  .progress-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .progress-label { font-size:12px; font-weight:500; color:var(--ink-muted); letter-spacing:.04em; }
+  .progress-fraction { font-size:12px; font-weight:600; color:var(--indigo); }
+  .progress-track { width:100%; height:5px; background:var(--border); border-radius:100px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--indigo),var(--indigo-mid)); border-radius:100px; transition:width .4s cubic-bezier(.4,0,.2,1); }
+  /* DIM TAG */
+  .dim-tag { width:100%; max-width:560px; margin-bottom:12px; display:flex; align-items:center; gap:8px; opacity:0; transform:translateY(4px); transition:opacity .3s,transform .3s; }
+  .dim-tag.visible { opacity:1; transform:none; }
+  .dim-pill { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:3px 10px; border-radius:100px; color:#fff; }
+  .dim-pill.EI{background:var(--indigo);} .dim-pill.SN{background:var(--teal);} .dim-pill.TF{background:var(--amber);} .dim-pill.JP{background:var(--rose);}
+  .dim-label { font-size:12px; color:var(--ink-muted); }
+  /* CARD */
+  .card-wrap { width:100%; max-width:560px; }
+  .card { background:var(--surface); border-radius:var(--radius); padding:28px 24px 24px; box-shadow:0 2px 12px rgba(0,0,0,.06),0 0 0 1px var(--border); opacity:0; transform:translateY(18px) scale(.98); transition:opacity .32s ease,transform .32s ease; }
+  .card.in { opacity:1; transform:translateY(0) scale(1); }
+  .q-num { font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:12px; }
+  .q-text { font-size:17px; font-weight:500; line-height:1.55; color:var(--ink); margin-bottom:22px; }
+  .options { display:flex; flex-direction:column; gap:10px; }
+  .option { display:flex; align-items:flex-start; gap:14px; padding:14px 16px; border-radius:12px; border:1.5px solid var(--border); cursor:pointer; transition:border-color var(--transition),background var(--transition),box-shadow var(--transition); background:var(--bg); user-select:none; -webkit-tap-highlight-color:transparent; }
+  .option:hover { border-color:var(--indigo-mid); background:var(--indigo-light); }
+  .option.selected { border-color:var(--indigo); background:var(--indigo-light); box-shadow:0 0 0 3px rgba(64,82,181,.12); }
+  .option-letter { flex-shrink:0; width:28px; height:28px; border-radius:50%; background:var(--border); font-size:12px; font-weight:700; color:var(--ink-muted); display:flex; align-items:center; justify-content:center; transition:background var(--transition),color var(--transition); }
+  .option.selected .option-letter { background:var(--indigo); color:#fff; }
+  .option-text { font-size:14.5px; line-height:1.55; color:var(--ink); padding-top:3px; }
+  /* NAV */
+  .nav { width:100%; max-width:560px; display:flex; justify-content:space-between; align-items:center; margin-top:20px; gap:12px; }
+  .btn { padding:12px 24px; border-radius:10px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; border:none; transition:background var(--transition),opacity var(--transition),transform .15s; }
+  .btn:active { transform:scale(.97); }
+  .btn-ghost { background:transparent; color:var(--ink-muted); border:1.5px solid var(--border); }
+  .btn-ghost:hover { border-color:var(--indigo-mid); color:var(--indigo); }
+  .btn-primary { background:var(--indigo); color:#fff; flex:1; max-width:220px; }
+  .btn-primary:hover { background:#3347a0; }
+  .btn-primary:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+  .dot-nav { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; max-width:200px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:var(--border); transition:background .25s,transform .25s; }
+  .dot.answered { background:var(--indigo-mid); }
+  .dot.current { background:var(--indigo); transform:scale(1.3); }
+  /* INTRO */
+  #intro { width:100%; max-width:560px; display:flex; flex-direction:column; align-items:center; gap:20px; animation:fadeUp .4s ease both; }
+  .intro-card { background:var(--surface); border-radius:var(--radius); padding:32px 28px; border:1px solid var(--border); box-shadow:0 2px 12px rgba(0,0,0,.05); width:100%; text-align:center; }
+  .intro-icon { font-size:48px; margin-bottom:16px; display:block; }
+  .intro-card h2 { font-size:20px; font-weight:600; margin-bottom:10px; }
+  .intro-card p { font-size:14px; color:var(--ink-muted); line-height:1.7; }
+  .dim-chips { display:flex; gap:8px; justify-content:center; margin-top:20px; flex-wrap:wrap; }
+  .dim-chip { display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:100px; font-size:12px; font-weight:600; }
+  .dim-chip.EI{background:#EEF0FB;color:var(--indigo);} .dim-chip.SN{background:#E6F8F5;color:#1E9E87;} .dim-chip.TF{background:#FEF3C7;color:#B45309;} .dim-chip.JP{background:#FEE2E9;color:#D44060;}
+  .dim-chip span.dot2 { width:8px;height:8px;border-radius:50%; }
+  .EI .dot2{background:var(--indigo);} .SN .dot2{background:var(--teal);} .TF .dot2{background:var(--amber);} .JP .dot2{background:var(--rose);}
+  /* TIE BREAKER */
+  #tie-breaker { width:100%; max-width:560px; display:none; flex-direction:column; gap:20px; animation:fadeUp .4s ease both; }
+  .tie-header { text-align:center; }
+  .tie-header .badge { font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:#B45309; background:#FEF3C7; border-radius:100px; padding:4px 12px; display:inline-block; margin-bottom:12px; }
+  .tie-header h2 { font-size:20px; font-weight:600; margin-bottom:8px; }
+  .tie-header p { font-size:13.5px; color:var(--ink-muted); line-height:1.6; }
+  .tie-dim-label { font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-muted); text-align:center; }
+  .tie-cards { display:flex; flex-direction:column; gap:14px; }
+  .tie-type-card { background:var(--surface); border-radius:var(--radius); padding:22px 20px; border:2px solid var(--border); cursor:pointer; transition:border-color .25s,box-shadow .25s,background .25s; }
+  .tie-type-card:hover { border-color:var(--indigo-mid); background:var(--indigo-light); }
+  .tie-type-card.selected { border-color:var(--indigo); box-shadow:0 0 0 3px rgba(64,82,181,.12); background:var(--indigo-light); }
+  .tie-type-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .tie-type-badge { font-size:20px; font-weight:700; color:var(--indigo); background:var(--indigo-light); padding:6px 14px; border-radius:10px; letter-spacing:.05em; }
+  .tie-type-name { font-size:14px; font-weight:600; color:var(--ink); }
+  .tie-type-sub { font-size:12px; color:var(--ink-muted); margin-top:2px; }
+  .tie-type-desc { font-size:13.5px; line-height:1.65; color:#3D3D50; margin-bottom:10px; }
+  .tie-traits { display:flex; flex-wrap:wrap; gap:6px; }
+  .tie-trait { font-size:11px; font-weight:500; padding:3px 10px; border-radius:100px; background:#F0F0F5; color:var(--ink-muted); }
+  .tie-confirm-btn { width:100%; padding:14px; border-radius:12px; background:var(--indigo); color:#fff; font-family:inherit; font-size:15px; font-weight:600; border:none; cursor:pointer; transition:background .2s,transform .15s,opacity .2s; }
+  .tie-confirm-btn:disabled { opacity:.4; cursor:not-allowed; }
+  .tie-confirm-btn:not(:disabled):hover { background:#3347a0; }
+  .tie-confirm-btn:active:not(:disabled) { transform:scale(.98); }
+  /* RESULT */
+  #result { width:100%; max-width:560px; display:none; flex-direction:column; gap:20px; animation:fadeUp .4s ease both; }
+  .result-hero { background:linear-gradient(135deg,#3347a0 0%,#4052B5 50%,#6272CC 100%); border-radius:var(--radius); padding:36px 28px; text-align:center; color:#fff; position:relative; overflow:hidden; }
+  .result-hero::before { content:''; position:absolute; top:-40px; right:-40px; width:180px; height:180px; border-radius:50%; background:rgba(255,255,255,.06); }
+  .result-hero::after { content:''; position:absolute; bottom:-30px; left:-30px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,.05); }
+  .result-label { font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; opacity:.7; margin-bottom:10px; }
+  .result-type { font-size:56px; font-weight:700; letter-spacing:.06em; line-height:1; margin-bottom:10px; }
+  .result-name { font-size:16px; font-weight:500; opacity:.9; }
+  .axes-card { background:var(--surface); border-radius:var(--radius); padding:24px; border:1px solid var(--border); display:flex; flex-direction:column; gap:18px; }
+  .axes-title { font-size:13px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:4px; }
+  .axis-row { display:flex; flex-direction:column; gap:6px; }
+  .axis-labels { display:flex; justify-content:space-between; font-size:13px; font-weight:600; }
+  .axis-bar-track { width:100%; height:10px; background:var(--border); border-radius:100px; overflow:hidden; position:relative; }
+  .axis-bar-fill { position:absolute; top:0; left:0; height:100%; border-radius:100px; transition:width .8s cubic-bezier(.4,0,.2,1); }
+  .axis-counts { display:flex; justify-content:space-between; font-size:11px; color:var(--ink-muted); }
+  /* Info cards */
+  .info-card { background:var(--surface); border-radius:var(--radius); padding:24px; border:1px solid var(--border); }
+  .info-card-title { font-size:13px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:16px; }
+  .desc-text { font-size:14px; line-height:1.75; color:#3D3D50; }
+  .traits { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+  .trait-tag { font-size:12px; font-weight:500; padding:5px 12px; border-radius:100px; background:var(--indigo-light); color:var(--indigo); }
+  /* Pros / Cons */
+  .pros-cons { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .pros-box, .cons-box { border-radius:12px; padding:16px; }
+  .pros-box { background:#F0FDF4; border:1px solid #BBF7D0; }
+  .cons-box { background:#FFF5F5; border:1px solid #FECACA; }
+  .pros-cons-title { font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin-bottom:10px; }
+  .pros-box .pros-cons-title { color:#16A34A; }
+  .cons-box .pros-cons-title { color:#DC2626; }
+  .pros-cons ul { padding-left:0; list-style:none; display:flex; flex-direction:column; gap:6px; }
+  .pros-cons li { font-size:13px; line-height:1.5; color:var(--ink); display:flex; gap:6px; align-items:flex-start; }
+  .pros-cons li::before { flex-shrink:0; margin-top:2px; }
+  .pros-box li::before { content:'✓'; color:#16A34A; font-weight:700; }
+  .cons-box li::before { content:'△'; color:#DC2626; font-weight:700; }
+  /* Compatibility */
+  .compat-list { display:flex; flex-direction:column; gap:10px; }
+  .compat-item { display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:var(--bg); border-radius:10px; border:1px solid var(--border); }
+  .compat-badge { flex-shrink:0; font-size:13px; font-weight:700; color:var(--indigo); background:var(--indigo-light); padding:4px 10px; border-radius:8px; letter-spacing:.04em; }
+  .compat-text { font-size:13px; line-height:1.6; color:var(--ink); }
+  .compat-text strong { font-weight:600; display:block; margin-bottom:2px; }
+  /* Team roles */
+  .role-list { display:flex; flex-direction:column; gap:8px; }
+  .role-item { display:flex; align-items:flex-start; gap:10px; padding:12px 14px; background:var(--bg); border-radius:10px; border:1px solid var(--border); }
+  .role-icon { font-size:18px; flex-shrink:0; }
+  .role-text { font-size:13.5px; line-height:1.6; }
+  .role-text strong { font-weight:600; color:var(--ink); }
+  .role-text span { color:var(--ink-muted); }
+  .btn-restart { width:100%; padding:15px; border-radius:12px; background:var(--indigo); color:#fff; font-family:inherit; font-size:15px; font-weight:600; border:none; cursor:pointer; transition:background .2s,transform .15s; }
+  .btn-restart:hover { background:#3347a0; }
+  .btn-restart:active { transform:scale(.98); }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  @media(max-width:420px){
+    .q-text{font-size:15.5px;} .result-type{font-size:44px;} .pros-cons{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="intro">
+  <div class="header">
+    <span class="header-badge">แบบทดสอบบุคลิกภาพ</span>
+    <h1>Quick 16 Personality Test</h1>
+    <p>ตอบคำถาม 16 ข้อตามความรู้สึกจริง ๆ ของคุณ<br>ไม่มีคำตอบถูกหรือผิด</p>
+  </div>
+  <div class="intro-card">
+    <span class="intro-icon">🧭</span>
+    <h2>ค้นหาบุคลิกภาพของคุณ</h2>
+    <p>แบบทดสอบนี้วัด 4 มิติ ตามกรอบ MBTI<br>ใช้เวลาประมาณ 3–5 นาที</p>
+    <div class="dim-chips">
+      <div class="dim-chip EI"><span class="dot2"></span>Extraversion / Introversion</div>
+      <div class="dim-chip SN"><span class="dot2"></span>Sensing / iNtuition</div>
+      <div class="dim-chip TF"><span class="dot2"></span>Thinking / Feeling</div>
+      <div class="dim-chip JP"><span class="dot2"></span>Judging / Perceiving</div>
+    </div>
+  </div>
+  <button class="btn-restart" onclick="startTest()" style="max-width:320px">เริ่มทำแบบทดสอบ →</button>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" style="display:none;width:100%;max-width:560px;flex-direction:column;align-items:center;">
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span class="progress-label">ความคืบหน้า</span>
+      <span class="progress-fraction" id="prog-frac">1 / 16</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:6.25%"></div></div>
+  </div>
+  <div class="dim-tag" id="dim-tag">
+    <span class="dim-pill EI" id="dim-pill">E · I</span>
+    <span class="dim-label" id="dim-label">มิติ: Extraversion / Introversion</span>
+  </div>
+  <div class="card-wrap">
+    <div class="card" id="q-card">
+      <div class="q-num" id="q-num">ข้อที่ 1 / 16</div>
+      <div class="q-text" id="q-text"></div>
+      <div class="options" id="options"></div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="btn btn-ghost" id="btn-prev" onclick="navigate(-1)">← ก่อนหน้า</button>
+    <div class="dot-nav" id="dot-nav"></div>
+    <button class="btn btn-primary" id="btn-next" onclick="navigate(1)">ถัดไป →</button>
+  </div>
+</div>
+
+<!-- TIE BREAKER -->
+<div id="tie-breaker">
+  <div class="tie-header">
+    <span class="badge">คะแนนเท่ากัน</span>
+    <h2>เลือกที่ตรงกับคุณมากกว่า</h2>
+    <p id="tie-intro-text">คะแนนในมิตินี้เท่ากัน<br>อ่านรายละเอียดด้านล่างแล้วเลือก type ที่รู้สึกว่าตรงกับตัวคุณมากกว่า</p>
+  </div>
+  <div class="tie-dim-label" id="tie-dim-label">มิติ: E / I</div>
+  <div class="tie-cards" id="tie-cards"></div>
+  <button class="tie-confirm-btn" id="tie-confirm-btn" disabled onclick="confirmTie()">ยืนยันการเลือก →</button>
+</div>
+
+<!-- RESULT -->
+<div id="result">
+  <div class="result-hero">
+    <div class="result-label">บุคลิกภาพของคุณคือ</div>
+    <div class="result-type" id="res-type">ENFJ</div>
+    <div class="result-name" id="res-name">The Protagonist</div>
+  </div>
+  <div class="axes-card">
+    <div class="axes-title">คะแนนในแต่ละมิติ</div>
+    <div class="axis-row" id="axis-EI"></div>
+    <div class="axis-row" id="axis-SN"></div>
+    <div class="axis-row" id="axis-TF"></div>
+    <div class="axis-row" id="axis-JP"></div>
+  </div>
+  <div class="info-card">
+    <div class="info-card-title">เกี่ยวกับคุณ</div>
+    <p class="desc-text" id="desc-text"></p>
+    <div class="traits" id="desc-traits"></div>
+  </div>
+  <div class="info-card">
+    <div class="info-card-title">จุดแข็ง &amp; จุดที่ควรระวัง</div>
+    <div class="pros-cons" id="pros-cons"></div>
+  </div>
+  <div class="info-card">
+    <div class="info-card-title">เข้ากันได้ดีกับ</div>
+    <div class="compat-list" id="compat-list"></div>
+  </div>
+  <div class="info-card">
+    <div class="info-card-title">บทบาทในทีมที่เหมาะกับคุณ</div>
+    <div class="role-list" id="role-list"></div>
+  </div>
+  <button class="btn-restart" onclick="restart()">ทำแบบทดสอบใหม่ ↺</button>
+</div>
+
+<script>
+const questions = [
+  {dim:'EI',text:'เมื่อเข้าร่วมกิจกรรมใหม่ คุณมักจะ...',a:'ชอบคุยทำความรู้จักคนก่อน',b:'ชอบสังเกตการณ์ก่อน',scoreA:'E',scoreB:'I'},
+  {dim:'EI',text:'หลังทำงานหนักทั้งวัน คุณอยากจะ...',a:'เจอคนหรือทำกิจกรรมร่วมกัน',b:'อยู่เงียบ ๆ คนเดียวเพื่อชาร์จพลัง',scoreA:'E',scoreB:'I'},
+  {dim:'EI',text:'เวลาประชุม คุณมักจะ...',a:'พูดความคิดออกมาก่อน',b:'คิดให้ตกผลึกก่อนแล้วค่อยพูด',scoreA:'E',scoreB:'I'},
+  {dim:'EI',text:'งานเลี้ยงสังสรรค์ทำให้คุณรู้สึก...',a:'มีพลังและสนุก',b:'เหนื่อยหลังจากนั้น',scoreA:'E',scoreB:'I'},
+  {dim:'SN',text:'เวลารับงานใหม่ คุณอยากรู้...',a:'ขั้นตอนและรายละเอียดที่ชัดเจน',b:'เป้าหมายและภาพรวมก่อน',scoreA:'S',scoreB:'N'},
+  {dim:'SN',text:'คุณมักสนใจ...',a:'สิ่งที่เกิดขึ้นจริงในตอนนี้',b:'สิ่งที่อาจเกิดขึ้นในอนาคต',scoreA:'S',scoreB:'N'},
+  {dim:'SN',text:'เวลาฟังเรื่องราว คุณสนใจ...',a:'ข้อเท็จจริงและสิ่งที่เกิดขึ้นจริง',b:'แนวคิดและความเป็นไปได้',scoreA:'S',scoreB:'N'},
+  {dim:'SN',text:'คุณชอบใช้...',a:'วิธีที่พิสูจน์แล้วว่าได้ผล',b:'วิธีใหม่ ๆ ที่น่าลอง',scoreA:'S',scoreB:'N'},
+  {dim:'TF',text:'เวลาตัดสินใจเรื่องสำคัญ คุณมักจะ...',a:'ใช้เหตุผลและตรรกะเป็นหลัก',b:'คำนึงถึงความรู้สึกของคนที่เกี่ยวข้อง',scoreA:'T',scoreB:'F'},
+  {dim:'TF',text:'เมื่อเพื่อนร่วมงานทำผิดพลาด คุณมักจะ...',a:'วิเคราะห์สาเหตุและหาทางแก้ไข',b:'ให้กำลังใจและแสดงความเข้าใจก่อน',scoreA:'T',scoreB:'F'},
+  {dim:'TF',text:'เวลามีข้อขัดแย้ง คุณสนใจ...',a:'ว่าอะไรคือสิ่งที่ถูกต้อง',b:'ว่าทุกคนรู้สึกอย่างไร',scoreA:'T',scoreB:'F'},
+  {dim:'TF',text:'คนมักบอกว่าคุณ...',a:'ตรงไปตรงมาและใช้เหตุผล',b:'อ่อนโยนและเข้าใจคน',scoreA:'T',scoreB:'F'},
+  {dim:'JP',text:'ก่อนเริ่มงานใหม่ คุณมักจะ...',a:'วางแผนอย่างชัดเจนก่อน',b:'เริ่มทำแล้วค่อยปรับไปตามสถานการณ์',scoreA:'J',scoreB:'P'},
+  {dim:'JP',text:'กับกำหนดส่งงาน คุณมักจะ...',a:'ส่งล่วงหน้าหรือทันเวลาเสมอ',b:'ทำเสร็จใกล้วันส่ง',scoreA:'J',scoreB:'P'},
+  {dim:'JP',text:'วันหยุด คุณชอบ...',a:'วางแผนไว้ล่วงหน้าชัดเจน',b:'ตัดสินใจตามสถานการณ์',scoreA:'J',scoreB:'P'},
+  {dim:'JP',text:'เมื่อมีการเปลี่ยนแผนกะทันหัน คุณ...',a:'รู้สึกไม่ค่อยชอบ ชอบแผนที่แน่นอน',b:'ปรับตัวได้ง่าย มองว่าเป็นความตื่นเต้น',scoreA:'J',scoreB:'P'},
+];
+
+const dimInfo = {
+  EI:{pill:'EI',label:'มิติ: Extraversion / Introversion',color:'#4052B5'},
+  SN:{pill:'SN',label:'มิติ: Sensing / iNtuition',color:'#2BBFA4'},
+  TF:{pill:'TF',label:'มิติ: Thinking / Feeling',color:'#F59E0B'},
+  JP:{pill:'JP',label:'มิติ: Judging / Perceiving',color:'#F06680'},
+};
+
+const dimNames = {
+  EI:'Extraversion / Introversion',
+  SN:'Sensing / iNtuition',
+  TF:'Thinking / Feeling',
+  JP:'Judging / Perceiving',
+};
+
+const typeData = {
+  INTJ:{
+    name:'The Architect · สถาปนิกแห่งกลยุทธ์',
+    desc:'คุณคือนักคิดอิสระที่มีวิสัยทัศน์ยาวไกล มีความสามารถในการวางแผนซับซ้อนและมุ่งมั่นทำให้สำเร็จ มักทำงานได้ดีที่สุดเมื่อมีอิสระในการคิด และมีมาตรฐานสูงทั้งกับตัวเองและผู้อื่น',
+    traits:['วางแผนระยะยาว','ตัดสินใจด้วยเหตุผล','มีวิสัยทัศน์','มีระบบ'],
+    pros:['วิเคราะห์สถานการณ์ได้รวดเร็วและแม่นยำ','วางแผนกลยุทธ์ระยะยาวได้เป็นอย่างดี','มุ่งมั่นและทุ่มเทจนงานสำเร็จ','แก้ปัญหาซับซ้อนได้โดยไม่ต้องพึ่งพาคนอื่น'],
+    cons:['อาจดูเย็นชาหรือเข้าถึงยาก','มาตรฐานสูงจนทำให้ตัวเองและทีมกดดัน','ไม่ชอบเปลี่ยนแผนกลางคัน','อาจมองข้ามความรู้สึกของคนในทีม'],
+    compat:[
+      {type:'ENFP',reason:'The Campaigner ช่วยเปิดมุมมองและนำพลังงานบวกมา สมดุลกับความเป็นระบบของ INTJ'},
+      {type:'ENTP',reason:'The Debater ชอบถกเถียงทางปัญญาเหมือนกัน ทำให้ทั้งคู่พัฒนาความคิดซึ่งกันและกัน'},
+      {type:'INFJ',reason:'The Advocate มีวิสัยทัศน์และความมุ่งมั่นคล้ายกัน เข้าใจกันในเชิงลึก'},
+    ],
+    roles:[
+      {icon:'🎯',title:'นักวางแผนกลยุทธ์',desc:'วิเคราะห์ภาพรวมและวางแผนระยะยาวให้ทีม'},
+      {icon:'🔬',title:'ผู้เชี่ยวชาญด้านระบบ',desc:'ออกแบบกระบวนการและแก้ปัญหาซับซ้อน'},
+      {icon:'📊',title:'ที่ปรึกษาอิสระ',desc:'ให้มุมมองที่เป็นกลางและตรงไปตรงมา'},
+    ]
+  },
+  INTP:{
+    name:'The Logician · นักตรรกะผู้คิดนอกกรอบ',
+    desc:'คุณรักการวิเคราะห์และค้นหาความจริงในทุกเรื่อง มองปัญหาจากมุมที่คนอื่นมองไม่เห็น และชอบพัฒนาทฤษฎีใหม่ ๆ เป็นคนที่คิดเองได้อย่างลึกซึ้งและหลงใหลในความรู้',
+    traits:['วิเคราะห์เชิงลึก','ชอบตั้งคำถาม','สร้างสรรค์ทางความคิด','ยืดหยุ่น'],
+    pros:['คิดวิเคราะห์ได้ละเอียดและรอบด้าน','สร้างแนวคิดใหม่ที่คนอื่นไม่เคยนึกถึง','เปิดรับความเปลี่ยนแปลงและข้อมูลใหม่','แก้ปัญหาเชิงทฤษฎีได้เป็นเลิศ'],
+    cons:['อาจคิดนานเกินไปจนตัดสินใจช้า','ขาดความสม่ำเสมอในการทำงานตามกำหนด','อาจดูไม่สนใจผู้อื่นเพราะหมกมุ่นกับความคิด','ยากที่จะทำงานซ้ำ ๆ ที่ไม่ท้าทาย'],
+    compat:[
+      {type:'ENTJ',reason:'The Commander ช่วยผลักดันไอเดียของ INTP ให้เกิดขึ้นจริง เติมเต็มด้านการลงมือทำ'},
+      {type:'INFJ',reason:'The Advocate ชอบสำรวจแนวคิดลึก ๆ เหมือนกัน ทำให้สนทนาได้อย่างมีความหมาย'},
+      {type:'ENTP',reason:'The Debater ชอบถกเถียงและตั้งคำถามเหมือนกัน กระตุ้นกันให้คิดไกลขึ้น'},
+    ],
+    roles:[
+      {icon:'💡',title:'นักวิจัยและพัฒนา',desc:'ค้นคว้าและสร้างแนวทางแก้ปัญหาใหม่ ๆ'},
+      {icon:'🧩',title:'ผู้ออกแบบระบบ',desc:'วางโครงสร้างและตรรกะของกระบวนการ'},
+      {icon:'🔍',title:'ผู้ตรวจสอบข้อมูล',desc:'วิเคราะห์และหาจุดบกพร่องที่ซ่อนอยู่'},
+    ]
+  },
+  ENTJ:{
+    name:'The Commander · ผู้บัญชาการที่เด็ดขาด',
+    desc:'คุณมีความเป็นผู้นำโดยธรรมชาติ ชอบจัดการและนำทีมสู่เป้าหมาย มีความมั่นใจและตัดสินใจได้รวดเร็ว มองเห็นทิศทางที่ชัดเจนและมีพลังในการขับเคลื่อนทีมให้ไปถึงเป้าหมาย',
+    traits:['ความเป็นผู้นำ','เด็ดขาด','มีประสิทธิภาพ','วางแผนเก่ง'],
+    pros:['นำทีมได้อย่างมีทิศทางและชัดเจน','ตัดสินใจได้เร็วในสถานการณ์กดดัน','มองเห็นโอกาสและใช้ทรัพยากรได้อย่างมีประสิทธิภาพ','จัดการงานหลายอย่างพร้อมกันได้ดี'],
+    cons:['อาจดูก้าวร้าวหรือไม่รับฟังความเห็นผู้อื่น','คาดหวังสูงจนกดดันคนในทีม','อาจมองข้ามรายละเอียดเล็กน้อย','ยากที่จะยอมรับความผิดพลาด'],
+    compat:[
+      {type:'INTP',reason:'The Logician เติมเต็มด้านการคิดวิเคราะห์เชิงลึก ช่วยให้ ENTJ มีฐานความคิดที่แข็งแกร่ง'},
+      {type:'INFJ',reason:'The Advocate ช่วยให้ ENTJ ใส่ใจมิติของคนในทีมมากขึ้น สมดุลกัน'},
+      {type:'ENFP',reason:'The Campaigner นำพลังสร้างสรรค์มาเสริมวิสัยทัศน์ของ ENTJ'},
+    ],
+    roles:[
+      {icon:'👑',title:'ผู้นำทีมหรือหัวหน้าโปรเจกต์',desc:'กำหนดทิศทางและขับเคลื่อนทีมสู่เป้าหมาย'},
+      {icon:'📋',title:'ผู้บริหารจัดการ',desc:'จัดสรรทรัพยากรและดูแลภาพรวมการดำเนินงาน'},
+      {icon:'🚀',title:'ผู้ริเริ่มโครงการ',desc:'เสนอและผลักดันโครงการใหม่ให้เกิดขึ้นจริง'},
+    ]
+  },
+  ENTP:{
+    name:'The Debater · นักโต้เถียงผู้เฉลียวฉลาด',
+    desc:'คุณรักการท้าทายสถานะเดิมและคิดค้นไอเดียใหม่ ๆ ชอบถกเถียงและสำรวจทุกมุมมองเพื่อค้นหาสิ่งที่ดีที่สุด มีพลังงานและความกระตือรือร้นที่ทำให้ทีมตื่นตัว',
+    traits:['ชอบถกเถียง','คิดเร็ว','สร้างสรรค์','กล้าท้าทาย'],
+    pros:['มองเห็นโอกาสและความเป็นไปได้ใหม่ ๆ','กระตุ้นให้ทีมคิดนอกกรอบ','แก้ปัญหาเฉพาะหน้าได้รวดเร็ว','ปรับตัวได้ดีกับสถานการณ์ที่เปลี่ยนแปลง'],
+    cons:['อาจเถียงเพื่อเถียง ทำให้เสียเวลา','เริ่มงานได้ดีแต่อาจไม่ทำให้จบ','ขาดความสม่ำเสมอในระยะยาว','อาจทำให้คนอื่นรู้สึกถูกโต้แย้งตลอดเวลา'],
+    compat:[
+      {type:'INFJ',reason:'The Advocate ช่วยให้ ENTP มีทิศทางและความลึก สมดุลความฉลาดของทั้งคู่'},
+      {type:'INTJ',reason:'The Architect รับมือกับการถกเถียงของ ENTP ได้ดี และช่วยนำไอเดียไปลงมือทำ'},
+      {type:'ENFJ',reason:'The Protagonist ช่วยให้บรรยากาศทีมดีขึ้น ลดแรงเสียดทานจากการโต้เถียง'},
+    ],
+    roles:[
+      {icon:'💬',title:'นักระดมสมอง',desc:'เสนอไอเดียใหม่และท้าทายสมมติฐานเดิม'},
+      {icon:'🎤',title:'โฆษกหรือนักเจรจา',desc:'นำเสนอมุมมองของทีมได้อย่างน่าเชื่อถือ'},
+      {icon:'⚡',title:'นักแก้ปัญหาเฉพาะหน้า',desc:'รับมือวิกฤตและสถานการณ์ที่ไม่คาดคิดได้ดี'},
+    ]
+  },
+  INFJ:{
+    name:'The Advocate · ผู้สนับสนุนผู้เปี่ยมอุดมการณ์',
+    desc:'คุณเป็นคนเงียบแต่มีอุดมการณ์แน่วแน่ มีความเข้าใจมนุษย์อย่างลึกซึ้ง และอุทิศตัวเพื่อทำสิ่งที่ดี มีสัญชาตญาณที่แม่นยำในการอ่านคนและสถานการณ์',
+    traits:['เข้าใจคน','มีอุดมการณ์','สังเกตเก่ง','ลึกซึ้ง'],
+    pros:['มีความเห็นอกเห็นใจและเข้าใจผู้อื่นอย่างลึกซึ้ง','มีวิสัยทัศน์และทิศทางที่ชัดเจน','สร้างแรงบันดาลใจให้คนรอบข้างได้','ทำงานอย่างทุ่มเทเพื่อเป้าหมายที่เชื่อ'],
+    cons:['แบกรับความรู้สึกคนอื่นจนเหนื่อยง่าย','อาจเป็นนักอุดมคตินิยมเกินไป','ยากที่จะวิจารณ์คนอื่นตรง ๆ','ต้องการเวลาส่วนตัวมากเพื่อฟื้นฟูพลังงาน'],
+    compat:[
+      {type:'ENFP',reason:'The Campaigner มีพลังงานบวกและความคิดสร้างสรรค์ที่ complement กับความลึกของ INFJ'},
+      {type:'ENTP',reason:'The Debater กระตุ้นให้ INFJ ขยายมุมมองและออกจาก comfort zone'},
+      {type:'INTJ',reason:'The Architect มีความมุ่งมั่นและวิสัยทัศน์คล้ายกัน เข้าใจกันในระดับลึก'},
+    ],
+    roles:[
+      {icon:'🌱',title:'โค้ชหรือที่ปรึกษา',desc:'ให้คำแนะนำและสนับสนุนการพัฒนาของสมาชิกในทีม'},
+      {icon:'✍️',title:'นักสื่อสารเชิงลึก',desc:'เขียนหรือนำเสนอเรื่องราวที่มีความหมายให้ทีม'},
+      {icon:'🤝',title:'ผู้ไกล่เกลี่ย',desc:'ช่วยให้ทีมผ่านความขัดแย้งด้วยความเข้าใจ'},
+    ]
+  },
+  INFP:{
+    name:'The Mediator · ผู้ไกล่เกลี่ยผู้เปี่ยมอุดมคติ',
+    desc:'คุณมีจินตนาการและอุดมคติสูง รักความถูกต้องและช่วยเหลือผู้อื่น มองโลกด้วยความหวังและความเป็นไปได้ มีความสามารถพิเศษในการทำความเข้าใจความรู้สึกของผู้อื่น',
+    traits:['มีอุดมคติ','เข้าอกเข้าใจ','สร้างสรรค์','ซื่อสัตย์'],
+    pros:['เข้าอกเข้าใจและรับฟังผู้อื่นได้ดีเป็นพิเศษ','สร้างงานสร้างสรรค์ที่มีความหมาย','ยืดหยุ่นและเปิดรับความเห็นที่หลากหลาย','ซื่อสัตย์และยึดมั่นในค่านิยมของตัวเอง'],
+    cons:['อาจหมกมุ่นกับอุดมคติจนไม่ยอมประนีประนอม','รับรู้การวิจารณ์มากเกินไปจนเจ็บปวด','ยากในการตัดสินใจเรื่องที่ขัดแย้งกับค่านิยม','อาจผัดวันประกันพรุ่งเมื่องานไม่มีความหมายสำหรับตัวเอง'],
+    compat:[
+      {type:'ENFJ',reason:'The Protagonist ช่วย INFP ออกมาแสดงตัวตนและช่วยผลักดันให้ทำสิ่งดี ๆ ได้จริง'},
+      {type:'INTJ',reason:'The Architect เติมเต็มด้านโครงสร้างและการวางแผนที่ INFP ขาด'},
+      {type:'ENFP',reason:'The Campaigner มีพลังงานและความคิดคล้ายกัน เข้าใจกันในระดับลึก'},
+    ],
+    roles:[
+      {icon:'🎨',title:'นักสร้างสรรค์คอนเทนต์',desc:'ผลิตงานที่มีความหมายและส่งแรงบันดาลใจ'},
+      {icon:'👂',title:'ผู้รับฟังและดูแล',desc:'คอยรับฟังและดูแลสมาชิกทีมที่ต้องการความช่วยเหลือ'},
+      {icon:'🌍',title:'นักสื่อสารคุณค่า',desc:'ถ่ายทอดเป้าหมายและค่านิยมขององค์กรได้ดี'},
+    ]
+  },
+  ENFJ:{
+    name:'The Protagonist · ผู้นำที่เปี่ยมแรงบันดาลใจ',
+    desc:'คุณมีเสน่ห์และแคร์คนรอบข้างอย่างจริงใจ มีความสามารถในการดึงดูดและสร้างแรงบันดาลใจให้ผู้อื่น มองเห็นศักยภาพในทุกคนและมุ่งมั่นช่วยให้เติบโต',
+    traits:['เสน่ห์ดึงดูด','เห็นอกเห็นใจ','สร้างแรงบันดาลใจ','ชอบช่วยเหลือ'],
+    pros:['สร้างบรรยากาศทีมที่อบอุ่นและมีพลัง','ดึงดูดและประสานคนที่หลากหลายได้ดี','สื่อสารได้ชัดเจนและโน้มน้าวใจเก่ง','ใส่ใจทั้งเป้าหมายและความรู้สึกของทีม'],
+    cons:['แบกรับปัญหาคนอื่นจนลืมดูแลตัวเอง','อาจยากที่จะตัดสินใจในทางที่ทำให้คนไม่พอใจ','ต้องการการยอมรับจากคนรอบข้าง','อาจเอาแต่ช่วยผู้อื่นจนงานตัวเองค้าง'],
+    compat:[
+      {type:'INFP',reason:'The Mediator มีความลึกและความซื่อสัตย์ที่ทำให้ ENFJ รู้สึกเชื่อมต่อได้จริง'},
+      {type:'INTP',reason:'The Logician เติมเต็มด้านการวิเคราะห์ที่ ENFJ ต้องการ ทำให้ตัดสินใจแม่นยำขึ้น'},
+      {type:'ENFP',reason:'The Campaigner มีพลังงานและความคิดสร้างสรรค์ที่เสริมกันได้ดีกับ ENFJ'},
+    ],
+    roles:[
+      {icon:'🌟',title:'ผู้นำทีมเชิงคน',desc:'สร้างแรงจูงใจและดึงศักยภาพสมาชิกออกมา'},
+      {icon:'🎓',title:'วิทยากรหรือผู้ฝึกอบรม',desc:'ถ่ายทอดความรู้และแรงบันดาลใจให้ผู้อื่น'},
+      {icon:'🤝',title:'ผู้ประสานงาน',desc:'เชื่อมทีมและผู้มีส่วนได้ส่วนเสียให้ทำงานร่วมกัน'},
+    ]
+  },
+  ENFP:{
+    name:'The Campaigner · นักรณรงค์ผู้ร่าเริง',
+    desc:'คุณร่าเริง ชอบสำรวจไอเดียและผู้คน มองโลกในแง่ดีและสามารถเชื่อมต่อกับทุกคนได้อย่างเป็นธรรมชาติ มีพลังงานที่ทำให้คนรอบข้างรู้สึกตื่นเต้นกับสิ่งที่กำลังทำ',
+    traits:['กระตือรือร้น','สังสรรค์','มองโลกดี','สร้างสรรค์'],
+    pros:['ดึงดูดคนและสร้างพลังบวกให้ทีม','คิดนอกกรอบและเสนอไอเดียแปลกใหม่','ปรับตัวเข้ากับคนและสถานการณ์ต่าง ๆ ได้ดี','สร้างแรงบันดาลใจให้คนรอบข้างลองสิ่งใหม่'],
+    cons:['อาจเริ่มหลายอย่างพร้อมกันจนไม่จบสักเรื่อง','ขาดความสม่ำเสมอในงานที่ต้องทำซ้ำ','อาจตัดสินใจตามอารมณ์มากเกินไป','ยากที่จะอยู่กับงานที่น่าเบื่อเป็นเวลานาน'],
+    compat:[
+      {type:'INTJ',reason:'The Architect ให้โครงสร้างและทิศทางที่ ENFP ต้องการเพื่อเปลี่ยนไอเดียเป็นความจริง'},
+      {type:'INFJ',reason:'The Advocate มีความลึกที่ดึงดูด ENFP และช่วยให้โฟกัสกับสิ่งสำคัญ'},
+      {type:'ENFJ',reason:'The Protagonist มีพลังสร้างสรรค์คล้ายกัน ทำงานร่วมกันได้อย่างสนุกและมีประสิทธิภาพ'},
+    ],
+    roles:[
+      {icon:'📣',title:'นักสื่อสารและประชาสัมพันธ์',desc:'นำเสนอโครงการและสร้างการมีส่วนร่วม'},
+      {icon:'🎯',title:'นักสร้างแรงจูงใจ',desc:'กระตุ้นและสร้างพลังบวกให้สมาชิกทีม'},
+      {icon:'🔗',title:'ผู้สร้างเครือข่าย',desc:'เชื่อมคนและทรัพยากรที่จำเป็นเข้าหากัน'},
+    ]
+  },
+  ISTJ:{
+    name:'The Logistician · นักวางแผนผู้เชื่อถือได้',
+    desc:'คุณเชื่อถือได้ ทำงานอย่างมีระบบ และยึดมั่นในหน้าที่ มีความรับผิดชอบสูงและทำงานให้สำเร็จตามที่รับปากเสมอ เป็นเสาหลักที่ทีมพึ่งพาได้',
+    traits:['รับผิดชอบ','มีระบบ','เชื่อถือได้','ทำงานหนัก'],
+    pros:['ทำตามความรับผิดชอบได้อย่างสม่ำเสมอ','จัดการรายละเอียดได้อย่างแม่นยำ','วางแผนและบริหารเวลาได้ดีเยี่ยม','เป็นที่พึ่งของทีมในสถานการณ์กดดัน'],
+    cons:['อาจยึดติดกับวิธีเดิมจนยากปรับตัว','ขาดความยืดหยุ่นเมื่อต้องเปลี่ยนแผน','อาจดูเข้มงวดหรือไม่ creative','มักไม่แสดงความรู้สึกหรือชมเชยผู้อื่น'],
+    compat:[
+      {type:'ESFP',reason:'The Entertainer นำพลังและความสนุกมาสมดุลกับความเป็นระบบของ ISTJ'},
+      {type:'ESTP',reason:'The Entrepreneur มีพลังงานและปฏิบัตินิยมคล้ายกัน ทำงานด้วยกันได้มีประสิทธิภาพ'},
+      {type:'ISFJ',reason:'The Defender มีค่านิยมและวิธีทำงานที่สอดคล้องกัน เข้าใจกันดี'},
+    ],
+    roles:[
+      {icon:'📁',title:'ผู้ดูแลระบบและมาตรฐาน',desc:'ตรวจสอบและรักษาคุณภาพงานให้คงที่'},
+      {icon:'🗂️',title:'ผู้จัดการโปรเจกต์',desc:'ติดตามความคืบหน้าและจัดการ timeline'},
+      {icon:'⚖️',title:'ผู้ตรวจสอบความถูกต้อง',desc:'ตรวจทานเอกสารและกระบวนการให้แม่นยำ'},
+    ]
+  },
+  ISFJ:{
+    name:'The Defender · ผู้พิทักษ์ผู้อบอุ่น',
+    desc:'คุณอบอุ่นและเอาใจใส่ผู้อื่น ทำงานอย่างเงียบ ๆ เพื่อช่วยเหลือและปกป้องคนที่คุณรัก มีความจงรักภักดีสูงและจดจำรายละเอียดเกี่ยวกับคนรอบข้างได้ดีเป็นพิเศษ',
+    traits:['อบอุ่น','ใส่ใจรายละเอียด','จงรักภักดี','ช่วยเหลือ'],
+    pros:['ดูแลและใส่ใจสมาชิกทีมอย่างจริงใจ','จดจำรายละเอียดสำคัญได้แม่นยำ','ทำงานเงียบ ๆ โดยไม่ต้องการเครดิต','สร้างบรรยากาศที่อบอุ่นและปลอดภัย'],
+    cons:['อาจยากที่จะปฏิเสธหรือแสดงขอบเขต','เก็บความรู้สึกไว้แทนการพูดออกมา','อาจยึดติดกับวิธีเดิมที่คุ้นเคย','เหนื่อยง่ายเมื่อช่วยคนมากเกินไป'],
+    compat:[
+      {type:'ESFP',reason:'The Entertainer นำความสนุกสนานมาปลุก ISFJ ให้ออกมาเปิดตัวมากขึ้น'},
+      {type:'ISTJ',reason:'The Logistician มีค่านิยมและรูปแบบการทำงานที่เข้ากันได้ดี'},
+      {type:'ENFJ',reason:'The Protagonist ดูแลความรู้สึกของ ISFJ และช่วยให้กล้าแสดงออกมากขึ้น'},
+    ],
+    roles:[
+      {icon:'💊',title:'ผู้ดูแลและสนับสนุน',desc:'คอยช่วยเหลือและอำนวยความสะดวกให้ทีม'},
+      {icon:'📝',title:'ผู้บันทึกและจัดเก็บข้อมูล',desc:'ดูแลข้อมูลและเอกสารสำคัญของทีม'},
+      {icon:'🛡️',title:'ผู้รักษาคุณภาพ',desc:'ตรวจสอบให้มั่นใจว่างานมีคุณภาพสม่ำเสมอ'},
+    ]
+  },
+  ESTJ:{
+    name:'The Executive · ผู้บริหารผู้มีประสิทธิภาพ',
+    desc:'คุณชอบความเป็นระเบียบและทำให้สิ่งต่าง ๆ เกิดขึ้นจริง มีความสามารถในการบริหารจัดการและทำให้ทีมทำงานได้ผล ตรงไปตรงมาและมุ่งมั่นสู่ผลลัพธ์',
+    traits:['มีระเบียบ','ผู้นำ','จัดการเก่ง','ตรงไปตรงมา'],
+    pros:['จัดการระบบและกระบวนการได้อย่างมีประสิทธิภาพ','นำทีมไปสู่เป้าหมายได้ชัดเจน','ตัดสินใจได้รวดเร็วและตรงไปตรงมา','สร้างโครงสร้างที่ทำให้ทีมทำงานได้ดีขึ้น'],
+    cons:['อาจดูแข็งกร้าวหรือไม่ยืดหยุ่น','ยากที่จะยอมรับวิธีนอกกรอบ','อาจดูแลรายละเอียดด้านอารมณ์คนไม่พอ','คาดหวังสูงจนทำให้ทีมกดดัน'],
+    compat:[
+      {type:'ISFP',reason:'The Adventurer ช่วยให้ ESTJ เห็นมิติด้านความรู้สึกและความอ่อนโยน'},
+      {type:'ISTP',reason:'The Virtuoso มีทักษะปฏิบัติที่เสริมกับความเป็นระบบของ ESTJ'},
+      {type:'ISTJ',reason:'The Logistician มีวิธีทำงานและค่านิยมที่สอดคล้องกัน ทำงานร่วมกันราบรื่น'},
+    ],
+    roles:[
+      {icon:'🏗️',title:'ผู้จัดการฝ่าย',desc:'บริหารงานประจำและดูแลให้ระบบทำงานได้ดี'},
+      {icon:'📊',title:'ผู้ควบคุมคุณภาพ',desc:'กำหนดมาตรฐานและติดตามผลการดำเนินงาน'},
+      {icon:'🗺️',title:'ผู้วางแผนปฏิบัติการ',desc:'แปลงกลยุทธ์ออกมาเป็นแผนงานที่ทำได้จริง'},
+    ]
+  },
+  ESFJ:{
+    name:'The Consul · ที่ปรึกษาผู้เอาใจใส่',
+    desc:'คุณห่วงใยและชอบช่วยเหลือผู้อื่น สร้างความสัมพันธ์ที่ดีในทุกที่ รู้สึกดีเมื่อคนรอบข้างมีความสุข และมีทักษะในการทำให้ทีมอยู่ร่วมกันอย่างกลมเกลียว',
+    traits:['ห่วงใย','สังสรรค์','ช่วยเหลือ','จัดการดี'],
+    pros:['สร้างความสัมพันธ์ที่ดีในทีมได้เป็นธรรมชาติ','ดูแลความต้องการของสมาชิกทีมได้ดี','จัดการงานประจำได้อย่างน่าเชื่อถือ','สร้างบรรยากาศการทำงานที่ดี'],
+    cons:['อาจยากที่จะจัดการกับคนที่วิจารณ์หรือขัดแย้ง','ต้องการคำชมเพื่อรู้สึกมั่นคง','อาจยึดติดกับ tradition มากเกินไป','อาจเอาใจคนมากจนละเลยสิ่งที่ถูกต้อง'],
+    compat:[
+      {type:'ISFP',reason:'The Adventurer มีความอ่อนโยนและเข้าใจคนที่เสริมกับ ESFJ ได้ดี'},
+      {type:'INFP',reason:'The Mediator ให้ความลึกทางอารมณ์ที่ ESFJ ชื่นชม'},
+      {type:'ENFP',reason:'The Campaigner นำพลังงานและความสนุกมาทำให้ ESFJ รู้สึกตื่นเต้น'},
+    ],
+    roles:[
+      {icon:'🫂',title:'ผู้ดูแลบรรยากาศทีม',desc:'สร้างและรักษาความสัมพันธ์ที่ดีในทีม'},
+      {icon:'📞',title:'ผู้ประสานงานลูกค้า',desc:'ดูแลความสัมพันธ์กับผู้มีส่วนได้ส่วนเสีย'},
+      {icon:'🎉',title:'ผู้จัดกิจกรรมทีม',desc:'วางแผนและจัดกิจกรรมที่ทำให้ทีมแข็งแกร่ง'},
+    ]
+  },
+  ISTP:{
+    name:'The Virtuoso · นักปฏิบัติผู้เชี่ยวชาญ',
+    desc:'คุณมีทักษะในการแก้ปัญหาเฉพาะหน้าและชอบทดลองทำสิ่งต่าง ๆ มีความสามารถทางด้านเทคนิคสูงและชอบเรียนรู้จากการลงมือทำจริง',
+    traits:['มือฉมัง','ยืดหยุ่น','สังเกตเก่ง','อิสระ'],
+    pros:['แก้ปัญหาเฉพาะหน้าได้รวดเร็วและมีประสิทธิภาพ','มีทักษะทางเทคนิคที่ลึกและแม่นยำ','ทำงานภายใต้ความกดดันได้ดี','ไม่หลงไปกับอารมณ์ในสถานการณ์วิกฤต'],
+    cons:['อาจดูห่างเหินหรือไม่สนใจความรู้สึกคนอื่น','ขาดความสม่ำเสมอในงานระยะยาว','ยากที่จะทำงานที่มีโครงสร้างมากเกินไป','มักไม่วางแผนล่วงหน้าเท่าที่ควร'],
+    compat:[
+      {type:'ESTJ',reason:'The Executive ให้โครงสร้างที่ช่วย ISTP โฟกัสได้ดีขึ้น'},
+      {type:'ESTP',reason:'The Entrepreneur มีพลังงานและการลงมือทำที่เข้ากันกับ ISTP'},
+      {type:'ISFP',reason:'The Adventurer มีวิธีการใช้ชีวิตและการทำงานที่สอดคล้องกัน'},
+    ],
+    roles:[
+      {icon:'🔧',title:'ผู้เชี่ยวชาญเทคนิค',desc:'แก้ปัญหาเทคนิคที่ซับซ้อนได้อย่างตรงจุด'},
+      {icon:'🚨',title:'ผู้รับมือวิกฤต',desc:'จัดการสถานการณ์ฉุกเฉินได้อย่างสงบและมีประสิทธิภาพ'},
+      {icon:'⚙️',title:'ผู้ปรับปรุงกระบวนการ',desc:'หาจุดที่ไม่มีประสิทธิภาพและแก้ไขได้ตรงจุด'},
+    ]
+  },
+  ISFP:{
+    name:'The Adventurer · นักผจญภัยผู้ละเอียดอ่อน',
+    desc:'คุณอ่อนโยน ยืดหยุ่น และมีความสุนทรียะ ชอบใช้ชีวิตในปัจจุบันและแสดงออกผ่านการกระทำมากกว่าคำพูด มีหัวใจที่เต็มไปด้วยความเมตตา',
+    traits:['อ่อนโยน','มีศิลปะ','ยืดหยุ่น','ซื่อสัตย์'],
+    pros:['อ่อนโยนและเข้าถึงง่าย ทำให้ทีมรู้สึกปลอดภัย','มีความคิดสร้างสรรค์และสุนทรียะสูง','ยืดหยุ่นและปรับตัวได้กับสถานการณ์ต่าง ๆ','ลงมือทำด้วยความจริงใจไม่ต้องการเครดิต'],
+    cons:['อาจหลีกเลี่ยงความขัดแย้งจนปัญหาสะสม','ยากที่จะวางแผนระยะยาว','อาจขาดความมั่นใจในตัวเองในบางสถานการณ์','ยากที่จะแสดงความต้องการของตัวเองออกมา'],
+    compat:[
+      {type:'ENFJ',reason:'The Protagonist ดูแลและให้กำลังใจ ISFP ให้กล้าแสดงออกมากขึ้น'},
+      {type:'ESFJ',reason:'The Consul มีความอบอุ่นและดูแลใส่ใจที่ ISFP ชื่นชม'},
+      {type:'ISTP',reason:'The Virtuoso มีวิธีการมองโลกและใช้ชีวิตที่สอดคล้องกัน'},
+    ],
+    roles:[
+      {icon:'🎨',title:'นักออกแบบหรือสร้างสรรค์',desc:'งานที่ต้องการความสุนทรียะและความใส่ใจรายละเอียด'},
+      {icon:'💝',title:'ผู้ดูแลและเยียวยา',desc:'ดูแลสมาชิกทีมในด้านอารมณ์และความเป็นอยู่ที่ดี'},
+      {icon:'🌿',title:'ผู้ปฏิบัติงานเงียบ',desc:'ทำงานเบื้องหลังที่ทำให้โปรเจกต์ดำเนินได้ราบรื่น'},
+    ]
+  },
+  ESTP:{
+    name:'The Entrepreneur · ผู้ประกอบการผู้กล้าเสี่ยง',
+    desc:'คุณชอบความตื่นเต้นและดำเนินชีวิตด้วยการลงมือทำ มีพลังงานสูง ปรับตัวเก่ง และสามารถโน้มน้าวผู้อื่นได้ดี ชอบแก้ปัญหาในโลกแห่งความเป็นจริง',
+    traits:['กล้าเสี่ยง','ปรับตัวเร็ว','พลังสูง','ปฏิบัตินิยม'],
+    pros:['แก้ปัญหาเฉพาะหน้าได้รวดเร็วและสร้างสรรค์','โน้มน้าวและเจรจาต่อรองได้เป็นเลิศ','ตัดสินใจได้รวดเร็วในสถานการณ์ที่กดดัน','ปรับตัวได้ดีในสภาพแวดล้อมที่เปลี่ยนแปลง'],
+    cons:['อาจใจร้อนหรือรีบด่วนสรุปเกินไป','ขาดความสนใจในงานที่ต้องวางแผนระยะยาว','อาจมองข้ามกฎระเบียบหรือกระบวนการ','ยากที่จะอยู่กับงานประจำที่ไม่ท้าทาย'],
+    compat:[
+      {type:'ISFJ',reason:'The Defender ให้ความมั่นคงและรายละเอียดที่ ESTP ต้องการ'},
+      {type:'ISTJ',reason:'The Logistician ช่วยให้ ESTP มีระบบและทำตามแผนได้มากขึ้น'},
+      {type:'ISTP',reason:'The Virtuoso มีทักษะปฏิบัติและพลังงานที่เข้ากันได้ดี'},
+    ],
+    roles:[
+      {icon:'💼',title:'นักขายหรือนักเจรจา',desc:'นำเสนอและโน้มน้าวในสถานการณ์ที่ต้องการความกล้า'},
+      {icon:'🏃',title:'ผู้ดำเนินการภาคสนาม',desc:'ลงมือทำในพื้นที่จริงและรับมือสิ่งที่เกิดขึ้นได้ทันที'},
+      {icon:'🔥',title:'ผู้กระตุ้นทีม',desc:'สร้างพลังงานและความตื่นเต้นให้ทีมในช่วงที่ต้องการ'},
+    ]
+  },
+  ESFP:{
+    name:'The Entertainer · นักแสดงผู้มีเสน่ห์',
+    desc:'คุณมีชีวิตชีวาและชอบสร้างความสุขให้คนรอบข้าง รักการสังสรรค์และเป็นจุดสนใจในทุกที่ที่ไป มีความสามารถในการทำให้คนรู้สึกมีคุณค่าและมีความสุข',
+    traits:['มีชีวิตชีวา','สังสรรค์','เอาใจใส่','สนุกสนาน'],
+    pros:['สร้างบรรยากาศที่ดีและสนุกสนานให้ทีม','เข้าถึงคนได้ง่ายและทำให้ทุกคนรู้สึกต้อนรับ','ยืดหยุ่นและปรับตัวได้ดีในทุกสถานการณ์','มีพลังงานบวกที่ทำให้ทีมมีกำลังใจ'],
+    cons:['ยากที่จะโฟกัสกับงานระยะยาว','อาจหลีกเลี่ยงความขัดแย้งหรือเรื่องที่ไม่สนุก','อาจตัดสินใจตามอารมณ์มากเกินไป','ขาดความสม่ำเสมอในงานที่ต้องทำซ้ำ ๆ'],
+    compat:[
+      {type:'ISTJ',reason:'The Logistician ให้ความมั่นคงและโครงสร้างที่ ESFP ต้องการ'},
+      {type:'ISFJ',reason:'The Defender มีความอบอุ่นและเอาใจใส่ที่เข้ากันได้ดีกับ ESFP'},
+      {type:'ENFJ',reason:'The Protagonist มีพลังงานและความห่วงใยคนที่เสริมกันได้ดี'},
+    ],
+    roles:[
+      {icon:'🎭',title:'นักสร้างบรรยากาศ',desc:'ทำให้การประชุมหรือกิจกรรมทีมมีชีวิตชีวา'},
+      {icon:'🌈',title:'ผู้นำกิจกรรม',desc:'จัดและนำกิจกรรมที่ทำให้ทีมสนุกและ engage'},
+      {icon:'💬',title:'ผู้สื่อสารหน้างาน',desc:'ดูแลความสัมพันธ์กับลูกค้าหรือผู้มีส่วนได้ส่วนเสีย'},
+    ]
+  },
+};
+
+// Short descriptions for tie-breaker cards
+const shortDesc = {
+  E:'คุณได้พลังงานจากคนรอบข้าง ชอบแสดงออก และรู้สึกดีเมื่ออยู่ในกลุ่ม',
+  I:'คุณได้พลังงานจากการอยู่คนเดียว ชอบคิดก่อนพูด และรู้สึกดีในพื้นที่เงียบ',
+  S:'คุณเน้นข้อเท็จจริง รายละเอียด และประสบการณ์ที่ผ่านมา',
+  N:'คุณเน้นแนวคิด ความเป็นไปได้ และภาพอนาคต',
+  T:'คุณตัดสินใจด้วยเหตุผลและตรรกะ สนใจความถูกต้องมากกว่าความรู้สึก',
+  F:'คุณตัดสินใจโดยคำนึงถึงคนและความสัมพันธ์ สนใจความรู้สึกของทุกคน',
+  J:'คุณชอบมีแผนชัดเจน ตัดสินใจได้เร็ว และรู้สึกดีเมื่อเรื่องต่าง ๆ ถูกจัดการแล้ว',
+  P:'คุณชอบความยืดหยุ่น ปรับตัวเก่ง และเปิดรับตัวเลือกใหม่ตลอดเวลา',
+};
+
+const letterTraits = {
+  E:['สังสรรค์','พูดเก่ง','กระตือรือร้น'],
+  I:['ชอบคิดลึก','เงียบสงบ','อิสระ'],
+  S:['ปฏิบัตินิยม','ละเอียด','มีระบบ'],
+  N:['คิดไกล','ชอบไอเดีย','มองภาพรวม'],
+  T:['ตรรกะ','ยุติธรรม','เป็นกลาง'],
+  F:['เห็นอกเห็นใจ','อ่อนโยน','ใส่ใจคน'],
+  J:['มีระเบียบ','ตรงเวลา','วางแผนดี'],
+  P:['ยืดหยุ่น','สร้างสรรค์','ปรับตัวเร็ว'],
+};
+
+let answers = new Array(16).fill(null);
+let current = 0;
+let pendingScores = null;
+let pendingTies = [];
+let tieResolutions = {};
+let currentTieIdx = 0;
+
+function startTest() {
+  document.getElementById('intro').style.display = 'none';
+  const quiz = document.getElementById('quiz');
+  quiz.style.display = 'flex';
+  buildDotNav();
+  showQuestion(0);
+}
+
+function buildDotNav() {
+  const nav = document.getElementById('dot-nav');
+  nav.innerHTML = '';
+  for(let i=0;i<16;i++){
+    const d = document.createElement('div');
+    d.className = 'dot'; d.id = `dot-${i}`;
+    nav.appendChild(d);
+  }
+}
+
+function updateDotNav() {
+  for(let i=0;i<16;i++){
+    const d = document.getElementById(`dot-${i}`);
+    d.className = 'dot'+(i===current?' current':(answers[i]!==null?' answered':''));
+  }
+}
+
+function showQuestion(idx) {
+  current = idx;
+  const q = questions[idx];
+  const card = document.getElementById('q-card');
+  const tag = document.getElementById('dim-tag');
+  const di = dimInfo[q.dim];
+  tag.classList.remove('visible');
+  setTimeout(()=>{
+    document.getElementById('dim-pill').textContent = di.pill;
+    document.getElementById('dim-pill').className = `dim-pill ${q.dim}`;
+    document.getElementById('dim-label').textContent = di.label;
+    tag.classList.add('visible');
+  }, 80);
+  card.className = 'card';
+  void card.offsetWidth;
+  setTimeout(()=>{
+    document.getElementById('q-num').textContent = `ข้อที่ ${idx+1} / 16`;
+    document.getElementById('q-text').textContent = q.text;
+    const opts = document.getElementById('options');
+    opts.innerHTML = `
+      <div class="option${answers[idx]==='A'?' selected':''}" onclick="selectAnswer('A')" id="opt-A">
+        <div class="option-letter">A</div><div class="option-text">${q.a}</div>
+      </div>
+      <div class="option${answers[idx]==='B'?' selected':''}" onclick="selectAnswer('B')" id="opt-B">
+        <div class="option-letter">B</div><div class="option-text">${q.b}</div>
+      </div>`;
+    card.className = 'card in';
+    updateProgress(); updateDotNav(); updateNav();
+  }, 20);
+}
+
+function selectAnswer(choice) {
+  answers[current] = choice;
+  document.getElementById('opt-A').className = 'option'+(choice==='A'?' selected':'');
+  document.getElementById('opt-B').className = 'option'+(choice==='B'?' selected':'');
+  updateDotNav(); updateNav();
+  setTimeout(()=>{ if(current < 15) navigate(1); }, 350);
+}
+
+function navigate(dir) {
+  const next = current + dir;
+  if(next < 0) return;
+  if(next > 15){ showResultOrTie(); return; }
+  showQuestion(next);
+}
+
+function updateProgress() {
+  const pct = ((current+1)/16)*100;
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-frac').textContent = `${current+1} / 16`;
+}
+
+function updateNav() {
+  document.getElementById('btn-prev').style.visibility = current===0?'hidden':'visible';
+  const btnNext = document.getElementById('btn-next');
+  if(current===15){ btnNext.textContent='ดูผลลัพธ์ →'; btnNext.disabled=answers[current]===null; }
+  else { btnNext.textContent='ถัดไป →'; btnNext.disabled=false; }
+}
+
+function showResultOrTie() {
+  const scores = {E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0};
+  answers.forEach((a,i)=>{
+    if(a===null) return;
+    const q = questions[i];
+    scores[a==='A'?q.scoreA:q.scoreB]++;
+  });
+  pendingScores = scores;
+  pendingTies = [];
+  const pairs = [['E','I'],['S','N'],['T','F'],['J','P']];
+  pairs.forEach(([a,b])=>{ if(scores[a]===scores[b]) pendingTies.push([a,b]); });
+  if(pendingTies.length > 0){
+    tieResolutions = {};
+    currentTieIdx = 0;
+    document.getElementById('quiz').style.display = 'none';
+    showTieBreaker();
+  } else {
+    const type = pairs.map(([a,b])=>scores[a]>=scores[b]?a:b).join('');
+    document.getElementById('quiz').style.display = 'none';
+    renderResult(type, scores);
+  }
+}
+
+function showTieBreaker() {
+  const tb = document.getElementById('tie-breaker');
+  tb.style.display = 'flex';
+  tb.style.animation = 'none';
+  void tb.offsetWidth;
+  tb.style.animation = 'fadeUp .4s ease both';
+
+  const [a, b] = pendingTies[currentTieIdx];
+  const dimKey = a+b === 'EI' ? 'EI' : a+b === 'SN' ? 'SN' : a+b === 'TF' ? 'TF' : 'JP';
+  document.getElementById('tie-dim-label').textContent = `มิติ: ${dimNames[dimKey]}`;
+  document.getElementById('tie-intro-text').innerHTML = `คะแนนในมิติ <strong>${a} / ${b}</strong> เท่ากัน<br>อ่านคำอธิบายด้านล่างแล้วเลือก type ที่รู้สึกว่าตรงกับตัวคุณมากกว่า`;
+
+  const tieTotal = pendingTies.length;
+  const tieProgress = currentTieIdx + 1;
+  document.querySelector('#tie-breaker .badge').textContent =
+    tieTotal > 1 ? `คะแนนเท่ากัน (${tieProgress}/${tieTotal})` : 'คะแนนเท่ากัน';
+
+  const cards = document.getElementById('tie-cards');
+  cards.innerHTML = [a, b].map(letter => `
+    <div class="tie-type-card" id="tie-card-${letter}" onclick="selectTie('${letter}')">
+      <div class="tie-type-header">
+        <div class="tie-type-badge">${letter}</div>
+        <div>
+          <div class="tie-type-name">${letter === 'E' ? 'Extraversion' : letter === 'I' ? 'Introversion' : letter === 'S' ? 'Sensing' : letter === 'N' ? 'iNtuition' : letter === 'T' ? 'Thinking' : letter === 'F' ? 'Feeling' : letter === 'J' ? 'Judging' : 'Perceiving'}</div>
+          <div class="tie-type-sub">${getLetterSub(letter)}</div>
+        </div>
+      </div>
+      <div class="tie-type-desc">${shortDesc[letter]}</div>
+      <div class="tie-traits">${letterTraits[letter].map(t=>`<span class="tie-trait">${t}</span>`).join('')}</div>
+    </div>`).join('');
+
+  document.getElementById('tie-confirm-btn').disabled = true;
+  document.getElementById('tie-confirm-btn').dataset.selected = '';
+}
+
+function getLetterSub(l) {
+  const s = {E:'ชาร์จพลังจากคนรอบข้าง',I:'ชาร์จพลังจากเวลาส่วนตัว',S:'เน้นข้อเท็จจริงและประสบการณ์',N:'เน้นแนวคิดและความเป็นไปได้',T:'ตัดสินใจด้วยตรรกะ',F:'ตัดสินใจด้วยความรู้สึก',J:'ชอบความแน่นอนและแผนที่วางไว้',P:'ชอบความยืดหยุ่นและเปิดกว้าง'};
+  return s[l]||'';
+}
+
+function selectTie(letter) {
+  const [a,b] = pendingTies[currentTieIdx];
+  [a,b].forEach(l=>{
+    const c = document.getElementById(`tie-card-${l}`);
+    if(c) c.classList.remove('selected');
+  });
+  const sel = document.getElementById(`tie-card-${letter}`);
+  if(sel) sel.classList.add('selected');
+  const btn = document.getElementById('tie-confirm-btn');
+  btn.disabled = false;
+  btn.dataset.selected = letter;
+}
+
+function confirmTie() {
+  const chosen = document.getElementById('tie-confirm-btn').dataset.selected;
+  if(!chosen) return;
+  const [a,b] = pendingTies[currentTieIdx];
+  tieResolutions[a+b] = chosen;
+  currentTieIdx++;
+  if(currentTieIdx < pendingTies.length) {
+    showTieBreaker();
+  } else {
+    document.getElementById('tie-breaker').style.display = 'none';
+    const pairs = [['E','I'],['S','N'],['T','F'],['J','P']];
+    const type = pairs.map(([a,b])=>{
+      if(pendingScores[a]>pendingScores[b]) return a;
+      if(pendingScores[b]>pendingScores[a]) return b;
+      return tieResolutions[a+b] || a;
+    }).join('');
+    renderResult(type, pendingScores);
+  }
+}
+
+function renderResult(type, scores) {
+  const res = document.getElementById('result');
+  res.style.display = 'flex';
+  res.style.animation = 'none';
+  void res.offsetWidth;
+  res.style.animation = 'fadeUp .4s ease both';
+
+  const td = typeData[type] || typeData['ENFJ'];
+  document.getElementById('res-type').textContent = type;
+  document.getElementById('res-name').textContent = td.name;
+  document.getElementById('desc-text').textContent = td.desc;
+  document.getElementById('desc-traits').innerHTML = td.traits.map(t=>`<span class="trait-tag">${t}</span>`).join('');
+
+  renderAxis('axis-EI','E','I',scores,'#4052B5');
+  renderAxis('axis-SN','S','N',scores,'#2BBFA4');
+  renderAxis('axis-TF','T','F',scores,'#F59E0B');
+  renderAxis('axis-JP','J','P',scores,'#F06680');
+
+  // Pros/Cons
+  const pc = document.getElementById('pros-cons');
+  pc.innerHTML = `
+    <div class="pros-box">
+      <div class="pros-cons-title">จุดแข็ง</div>
+      <ul>${td.pros.map(p=>`<li>${p}</li>`).join('')}</ul>
+    </div>
+    <div class="cons-box">
+      <div class="pros-cons-title">จุดที่ควรระวัง</div>
+      <ul>${td.cons.map(c=>`<li>${c}</li>`).join('')}</ul>
+    </div>`;
+
+  // Compatibility
+  const cl = document.getElementById('compat-list');
+  cl.innerHTML = td.compat.map(c=>`
+    <div class="compat-item">
+      <div class="compat-badge">${c.type}</div>
+      <div class="compat-text"><strong>${typeData[c.type]?.name.split('·')[0].trim() || c.type}</strong>${c.reason}</div>
+    </div>`).join('');
+
+  // Team roles
+  const rl = document.getElementById('role-list');
+  rl.innerHTML = td.roles.map(r=>`
+    <div class="role-item">
+      <div class="role-icon">${r.icon}</div>
+      <div class="role-text"><strong>${r.title}</strong><br><span>${r.desc}</span></div>
+    </div>`).join('');
+}
+
+function renderAxis(id, a, b, scores, color) {
+  const total = scores[a]+scores[b];
+  const pct = total>0?(scores[a]/total*100):50;
+  const el = document.getElementById(id);
+  el.innerHTML = `
+    <div class="axis-labels"><span style="color:${color}">${a}</span><span style="color:#aaa">${b}</span></div>
+    <div class="axis-bar-track"><div class="axis-bar-fill" style="width:0%;background:${color}" id="${id}-bar"></div></div>
+    <div class="axis-counts"><span>${scores[a]} คะแนน</span><span>${scores[b]} คะแนน</span></div>`;
+  setTimeout(()=>{ document.getElementById(`${id}-bar`).style.width=pct+'%'; },150);
+}
+
+function restart() {
+  answers = new Array(16).fill(null);
+  current = 0; pendingScores = null; pendingTies = []; tieResolutions = {}; currentTieIdx = 0;
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('tie-breaker').style.display = 'none';
+  document.getElementById('intro').style.display = 'flex';
+}
+</script>
+</body>
+</html>
